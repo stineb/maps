@@ -43,7 +43,6 @@ print(satellite_map)
 
 Or with nice google maps:
 ```{r}
-#register_google(key = "AIzaSyAwaUVBeDWhUgWUFmW5VIG6PXLmMsrYNGk", write=TRUE)
 gmap <- try( get_googlemap(center = c(lon=-42.672000, lat=-22.350000), zoom = 12, maptype = "satellite"))
 ggmap(gmap) # + geom_polygon(aes(long, lat), data=fortify(site_poly), col="red", fill=NA )
 ```
