@@ -62,7 +62,7 @@ plot(st_geometry(huc_poly), col = NA, add = TRUE)
 title("Cali")
 ```
 
-And now Brazil. This is taken from [here](https://bookdown.org/robinlovelace/geocompr/adv-map.html).
+And now Brazil. This is taken from [here](https://bookdown.org/robinlovelace/geocompr/adv-map.html). Brazil maps are retrieved using the R package [brazilmaps](https://cran.r-project.org/web/packages/brazilmaps/brazilmaps.pdf). 
 ```{r}
 library(mapdata)
 library(raster)
@@ -101,3 +101,9 @@ rio = tm_shape(rio_map) +
 print(brazil)
 print(rio)
 ```
+
+More links:
+
+- [https://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html](https://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html)
+- [South American watersheds](https://datacatalog.worldbank.org/dataset/water-base-global-river-basins)
+
