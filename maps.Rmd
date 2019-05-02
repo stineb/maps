@@ -1,0 +1,108 @@
+---
+title: "Plotting maps for Nora"
+author: "Beni Stocker"
+date: "4/30/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(sbtools)
+library(dataRetrieval)
+library(sf)
+```
+
+Examples from [this link](https://waterdata.usgs.gov/blog/beyond-basic-mapping/).
+
+## Get shapefile
+
+```{r}
+item_file_download(sb_id = "5a83025ce4b00f54eb32956b",
+                   names = "huc8_05010007_example.zip",
+                   destinations = "huc8_05010007_example.zip",
+                   overwrite_file = TRUE)
+unzip('huc8_05010007_example.zip', overwrite = TRUE)
+huc_poly <- st_read('./huc8_05010007_example')
+# samerica <- st_read('./southamerica')
+huc_gages <- whatNWISdata(huc = "05010007", parameterCd = "00060", service="uv")
+```
+
+## Get raster
+
+This is to have a nice background.
+```{r}
+library(ggmap)
+bbox <- setNames(st_bbox(huc_poly), c("left", "bottom", "right", "top"))
+basemap_streets <- get_map(maptype = "roadmap", location = bbox, zoom = 9)
+basemap_satellite <- get_map(maptype = "satellite", location = bbox, zoom = 9)
+street_map <- ggmap(basemap_streets)
+satellite_map <- ggmap(basemap_satellite)
+print(street_map)
+print(satellite_map)
+```
+
+Or with nice google maps:
+```{r}
+gmap <- try( get_googlemap(center = c(lon=-42.672000, lat=-22.350000), zoom = 12, maptype = "satellite"))
+ggmap(gmap) # + geom_polygon(aes(long, lat), data=fortify(site_poly), col="red", fill=NA )
+```
+
+## Get country map
+
+Example California
+```{r}
+library(maps)
+map(database = 'state', regions = 'California', col = "tan", fill = TRUE, border = NA)
+map(database = 'county', regions = 'California', col = "white", fill = FALSE, add = TRUE)
+plot(st_geometry(huc_poly), col = NA, add = TRUE)
+# plot(st_geometry(huc_gages_sf), add = TRUE, col = "red", pch = 19, cex = 0.7)
+#legend("bottomright", legend = c("Gage", "Subbasin boundary"), pch = c(19,NA), lty = c(NA, 1),
+#      col = c("red", "black"), title = "Legend")
+title("Cali")
+```
+
+And now Brazil. This is taken from [here](https://bookdown.org/robinlovelace/geocompr/adv-map.html). Brazil maps are retrieved using the R package [brazilmaps](https://cran.r-project.org/web/packages/brazilmaps/brazilmaps.pdf). 
+```{r}
+library(mapdata)
+library(raster)
+library(dplyr)
+library(spData)
+library(tmap)    # for static and interactive maps
+library(leaflet) # for interactive maps
+library(ggplot2) # tidyverse vis package
+library(brazilmaps)
+
+rio_map <- get_brmap(geo = "State", geo.filter = list(State = 33), class = "sf")
+brazil_map <- get_brmap(geo = "State", class = "sf")
+micro <- get_brmap(geo = "MicroRegion", geo.filter = list(State = 33), class = "sf")
+micro_nf <- get_brmap(geo = "MicroRegion", geo.filter = list(MicroRegion = 33007), class = "sf")
+
+brazil = tm_shape(brazil_map) +
+  tm_fill(col="wheat") +
+  tm_borders() +
+  tm_shape(rio_map) +
+  tm_fill(col="tomato") +
+  tm_borders() +
+  tm_scale_bar(breaks = c(0, 100, 200), size = 5) +
+  tm_compass(type = "8star", position = c("left", "bottom")) +
+  tm_layout(bg.color = "grey70", title="Brazil", title.position = c("LEFT", "BOTTOM"))
+
+rio = tm_shape(rio_map) +
+  tm_fill(col="wheat") +
+  tm_borders() +
+  tm_shape(micro) +
+  tm_borders() +
+  tm_shape(micro_nf) +
+  tm_fill(col="tomato") +
+  tm_borders() +
+  tm_scale_bar(breaks = c(0, 100, 200), size = 1) +
+  tm_layout(bg.color = "grey70", title.position = c("LEFT", "TOP"))
+print(brazil)
+print(rio)
+```
+
+More links:
+
+- [https://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html](https://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html)
+- [South American watersheds](https://datacatalog.worldbank.org/dataset/water-base-global-river-basins)
+
