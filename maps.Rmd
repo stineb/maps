@@ -85,20 +85,26 @@ brazil = tm_shape(brazil_map) +
   tm_borders() +
   tm_scale_bar(breaks = c(0, 100, 200), size = 5) +
   tm_compass(type = "8star", position = c("left", "bottom")) +
-  tm_layout(bg.color = "grey70", title="Brazil", title.position = c("LEFT", "BOTTOM"))
+  tm_layout(bg.color = "grey70", title="Brazil", title.position = c("LEFT", "TOP"))
 
-rio = tm_shape(rio_map) +
+rio2 = tm_shape(brazil_map, bbox = st_bbox(rio_map)) +
   tm_fill(col="wheat") +
+  tm_borders() +
+  tm_shape(rio_map) +
+  tm_fill(col="tomato1") +
   tm_borders() +
   tm_shape(micro) +
   tm_borders() +
   tm_shape(micro_nf) +
-  tm_fill(col="tomato") +
+  tm_fill(col="tomato4") +
   tm_borders() +
   tm_scale_bar(breaks = c(0, 100, 200), size = 1) +
-  tm_layout(bg.color = "grey70", title.position = c("LEFT", "TOP"))
+  tm_layout(bg.color = "grey70", title="Rio de Janeiro State", title.position = c("LEFT", "TOP"))
+
 print(brazil)
-print(rio)
+print(rio2)
+out = tmap_arrange(brazil, rio2)
+tmap_save(tm = out, filename = "brazil_rio_map.pdf")
 ```
 
 More links:
