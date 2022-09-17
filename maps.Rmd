@@ -7,9 +7,11 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(sbtools)
-library(dataRetrieval)
+#library(sbtools)
+#library(dataRetrieval)
 library(sf)
+library(rbeni)
+library(dplyr)
 ```
 
 Examples from [this link](https://waterdata.usgs.gov/blog/beyond-basic-mapping/).
@@ -118,3 +120,47 @@ More links:
 - [https://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html](https://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html)
 - [South American watersheds](https://datacatalog.worldbank.org/dataset/water-base-global-river-basins)
 
+
+## Points on a map
+
+```{r}
+load("~/eval_pmodel/data/settings_eval_FULL.Rdata")
+load("~/eval_pmodel//data/settings_calib_FULL.Rdata")
+evalsites <- settings_eval$sitenames
+calibsites <- settings_calib$sitenames
+
+require(ncdf4, quietly = TRUE)
+ncfiln <- "~/data/greve/ep_over_p_cru_ncep.nc"
+if (!file.exists(ncfiln)) {
+  epop <- array( 1, dim=c(720,360) )
+} else {
+  nc <- nc_open( ncfiln )
+  epop <- ncvar_get( nc, varid="EP_OVER_P_CRU_NCEP" )
+}
+
+## simple map
+gg <- plot_map3(
+  1/epop, 
+  breaks = c(0,0.2,0.3,0.4,0.5,0.7,1,1.3,1.6,2,2.5,3,Inf), 
+  colorscale = c( "grey70" ), 
+  combine = FALSE,
+  legend_title = "" 
+  )
+
+gg$ggmap <- gg$ggmap +
+  geom_point( data = df_evalsites, aes(x = lon, y = lat), col='black', pch=21, bg='tomato', size=2 ) +
+  geom_point( data = df_calibsites, aes(x = lon, y = lat), col='black', pch=21, bg='tomato', size=2 ) +
+	  theme(
+	    legend.position = "right", # c(0.07, 0.35), #"left"
+	    legend.title=element_text(size=12),
+	    legend.text=element_text(size=10),
+	    panel.grid.major = element_blank(),
+	    panel.grid.minor = element_blank()
+	  )
+
+gg$ggmap
+
+cowplot::plot_grid(gg$ggmap, gg$gglegend, ncol = 2, rel_widths = c(1, 0.2))
+
+ggsave("./fig/map_sites_grey.pdf", width = 7, height = 4)
+```
